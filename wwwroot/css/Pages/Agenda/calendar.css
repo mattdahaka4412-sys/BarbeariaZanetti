@@ -1,0 +1,221 @@
+.calendar-header {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-header strong {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--text);
+    text-transform: capitalize;
+}
+
+.calendar-nav {
+    width: 42px;
+    height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: #141414;
+
+    color: var(--text);
+    text-decoration: none;
+
+    transition: var(--transition);
+}
+
+.calendar-nav i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.calendar-nav:hover {
+    color: var(--gold);
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(176, 141, 87, .20);
+}
+
+.calendar-nav:active {
+    transform: translateY(0) scale(.96);
+}
+
+.calendar-nav:focus-visible {
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px rgba(176, 141, 87, .20),
+        0 10px 24px rgba(0, 0, 0, .30);
+}
+
+.calendar-arrow {
+    width: 8px;
+    height: 8px;
+    border-top: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+}
+
+.calendar-arrow-left {
+    transform: rotate(-135deg);
+    margin-left: 4px;
+}
+
+.calendar-arrow-right {
+    transform: rotate(45deg);
+    margin-right: 4px;
+}
+
+.calendar-weekdays,
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.calendar-weekdays span {
+    color: var(--gold);
+    font-size: 12px;
+    text-align: center;
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+
+.calendar-day {
+    min-height: 68px;
+    border-radius: 13px;
+    border: 1px solid var(--border);
+    background: #141414;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.calendar-day span {
+    font-weight: 900;
+    font-size: 17px;
+}
+
+.calendar-day small {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 700;
+}
+
+.calendar-day:hover {
+    transform: translateY(-2px);
+    border-color: var(--gold);
+    box-shadow: 0 12px 28px rgba(0,0,0,.35);
+}
+
+.calendar-day.empty {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+.calendar-day.free {
+    background: rgba(255,255,255,.03);
+}
+
+.calendar-day.low {
+    background: rgba(46,139,87,.16);
+    border-color: rgba(46,139,87,.45);
+}
+
+.calendar-day.medium {
+    background: rgba(212,160,23,.16);
+    border-color: rgba(212,160,23,.48);
+}
+
+.calendar-day.high {
+    background: rgba(122,30,30,.28);
+    border-color: rgba(122,30,30,.70);
+}
+
+.calendar-day.full {
+    background: rgba(178,34,34,.48);
+    border-color: rgba(178,34,34,.90);
+    cursor: not-allowed;
+    opacity: .82;
+}
+
+.calendar-day.selected {
+    border-color: var(--gold);
+    box-shadow:
+        0 0 0 2px rgba(176,141,87,.22),
+        0 14px 30px rgba(0,0,0,.45);
+}
+
+.day-progress {
+    width: 72%;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.11);
+    overflow: hidden;
+}
+
+.day-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+}
+
+.calendar-day.free .day-progress-fill {
+    width: 0%;
+}
+
+.calendar-day.low .day-progress-fill {
+    width: 25%;
+    background: var(--success);
+}
+
+.calendar-day.medium .day-progress-fill {
+    width: 55%;
+    background: var(--warning);
+}
+
+.calendar-day.high .day-progress-fill {
+    width: 85%;
+    background: var(--primary);
+}
+
+.calendar-day.full .day-progress-fill {
+    width: 100%;
+    background: var(--danger);
+}
+
+@media (max-width: 520px) {
+    .calendar-card {
+        padding: 16px;
+    }
+
+    .calendar-weekdays,
+    .calendar-grid {
+        gap: 6px;
+    }
+
+    .calendar-day {
+        min-height: 58px;
+        border-radius: 10px;
+    }
+
+    .calendar-day span {
+        font-size: 15px;
+    }
+
+    .calendar-day small {
+        font-size: 9px;
+    }
+}

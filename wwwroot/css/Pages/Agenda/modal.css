@@ -1,0 +1,54 @@
+.zanetti-modal {
+    background: linear-gradient(180deg, #242424, #1b1b1b);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-large);
+    box-shadow: 0 30px 80px rgba(0,0,0,.65);
+}
+
+.zanetti-modal .modal-header,
+.zanetti-modal .modal-footer {
+    border-color: rgba(255,255,255,.08);
+}
+
+.zanetti-modal .modal-title {
+    font-weight: 900;
+}
+
+.zanetti-input {
+    background: #131313;
+    border: 1px solid var(--border);
+    color: var(--text);
+    height: 46px;
+    border-radius: var(--radius-small);
+}
+
+.zanetti-input:focus {
+    background: #131313;
+    color: var(--text);
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(176,141,87,.18);
+}
+
+.zanetti-input::placeholder {
+    color: rgba(245,245,245,.35);
+}
+
+.form-select.zanetti-input {
+    color: var(--text);
+}
+
+.btn-secondary-zanetti {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-small);
+    padding: 10px 18px;
+    transition: var(--transition);
+    font-weight: 700;
+}
+
+.btn-secondary-zanetti:hover {
+    color: var(--text);
+    border-color: var(--gold);
+}

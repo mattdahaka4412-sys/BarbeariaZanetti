@@ -1,0 +1,54 @@
+@model BarbeariaZanetti.Web.ViewModels.LoginViewModel
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Login";
+}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Barbearia Zanetti</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/theme.css" />
+    <link rel="stylesheet" href="~/css/login.css" />
+</head>
+
+<body class="login-body">
+
+    <div class="login-card">
+        <div class="login-brand">
+            <div class="brand-mark">BZ</div>
+            <h1>Barbearia Zanetti</h1>
+            <p>Honra • Estilo • Tradição</p>
+        </div>
+
+        @if (ViewBag.Erro != null)
+        {
+            <div class="alert alert-danger">
+                @ViewBag.Erro
+            </div>
+        }
+
+        <form asp-controller="Login" asp-action="Index" method="post">
+            <div class="mb-3">
+                <label class="form-label">Login</label>
+                <input asp-for="Login" class="form-control" autocomplete="username" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Senha</label>
+                <input asp-for="Senha" type="password" class="form-control" autocomplete="current-password" />
+            </div>
+
+            <button type="submit" class="btn-login">
+                Entrar
+            </button>
+        </form>
+    </div>
+
+</body>
+</html>

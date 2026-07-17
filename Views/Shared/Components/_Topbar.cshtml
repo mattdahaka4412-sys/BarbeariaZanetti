@@ -1,0 +1,19 @@
+@using BarbeariaZanetti.Web.Helpers
+
+<header class="app-topbar">
+    <div>
+        <h1>@ViewData["Title"]</h1>
+        <span>Barbearia Zanetti</span>
+    </div>
+
+    <div class="topbar-user">
+        <div class="user-info">
+            <strong>@SessionHelper.ObterUsuarioNome(Context)</strong>
+            <small>Sistema interno</small>
+        </div>
+
+        <a asp-controller="Login" asp-action="Logout" class="btn-logout">
+            Sair
+        </a>
+    </div>
+</header>

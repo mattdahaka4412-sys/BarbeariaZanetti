@@ -1,0 +1,32 @@
+@model IEnumerable<BarbeariaZanetti.Web.Models.Servico>
+
+@{
+    ViewData["Title"] = "Serviços";
+}
+
+<h1>Serviços</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Nome</th>
+            <th>Valor</th>
+            <th>Duração</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+    @foreach (var servico in Model)
+    {
+        <tr>
+            <td>@servico.Id</td>
+            <td>@servico.Nome</td>
+            <td>R$ @servico.ValorPadrao.ToString("N2")</td>
+            <td>@servico.DuracaoMinutos min</td>
+        </tr>
+    }
+
+    </tbody>
+</table>
