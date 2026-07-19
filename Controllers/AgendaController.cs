@@ -118,7 +118,8 @@ namespace BarbeariaZanetti.Web.Controllers
             }
 
             var dataHoraInicio = model.Data.Date + model.HoraInicio;
-            var dataHoraFim = model.Data.Date + model.HoraFim;
+            // Temporário
+            var dataHoraFim = dataHoraInicio;
 
             var agendamento = new Agendamento
             {
@@ -127,8 +128,13 @@ namespace BarbeariaZanetti.Web.Controllers
                 ServicoId = model.ServicoId,
                 StatusId = 1,
                 FormaPagamentoId = null,
+
                 DataHoraInicio = dataHoraInicio,
-                DataHoraFim = dataHoraFim,
+
+                // Valor temporário.
+                // O AgendamentoService recalcula automaticamente após salvar.
+                DataHoraFim = dataHoraInicio,
+
                 ValorCobrado = model.ValorCobrado,
                 Observacao = model.Observacao
             };

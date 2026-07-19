@@ -13,8 +13,6 @@ namespace BarbeariaZanetti.Web.ViewModels.Agenda
 
         public TimeSpan HoraInicio { get; set; }
 
-        public TimeSpan HoraFim { get; set; }
-
         public decimal ValorCobrado { get; set; }
 
         public string? Observacao { get; set; }

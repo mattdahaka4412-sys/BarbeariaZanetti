@@ -37,7 +37,44 @@ namespace BarbeariaZanetti.Web.Repositories
 
             using var connection = _connectionFactory.CreateConnection();
 
-            return await connection.QueryAsync<Agendamento>(sql, new { Data = data });
+            return await connection.QueryAsync<Agendamento>(
+                sql,
+                new { Data = data });
+        }
+
+        public async Task<IEnumerable<Agendamento>> BuscarPorBarbeiroEDataAsync(
+            int barbeiroId,
+            DateTime data)
+        {
+            const string sql = @"
+                SELECT
+                    Id,
+                    ClienteId,
+                    BarbeiroId,
+                    ServicoId,
+                    StatusId,
+                    FormaPagamentoId,
+                    DataHoraInicio,
+                    DataHoraFim,
+                    ValorCobrado,
+                    Observacao,
+                    DataCriacao,
+                    DataAtualizacao
+                FROM Agendamentos
+                WHERE BarbeiroId = @BarbeiroId
+                  AND DATE(DataHoraInicio) = DATE(@Data)
+                ORDER BY DataHoraInicio;
+            ";
+
+            using var connection = _connectionFactory.CreateConnection();
+
+            return await connection.QueryAsync<Agendamento>(
+                sql,
+                new
+                {
+                    BarbeiroId = barbeiroId,
+                    Data = data
+                });
         }
 
         public async Task<Agendamento?> BuscarPorIdAsync(int id)
@@ -62,7 +99,9 @@ namespace BarbeariaZanetti.Web.Repositories
 
             using var connection = _connectionFactory.CreateConnection();
 
-            return await connection.QueryFirstOrDefaultAsync<Agendamento>(sql, new { Id = id });
+            return await connection.QueryFirstOrDefaultAsync<Agendamento>(
+                sql,
+                new { Id = id });
         }
 
         public async Task CriarAsync(Agendamento agendamento)
@@ -122,6 +161,29 @@ namespace BarbeariaZanetti.Web.Repositories
             using var connection = _connectionFactory.CreateConnection();
 
             await connection.ExecuteAsync(sql, agendamento);
+        }
+
+        public async Task AtualizarHoraFimAsync(
+            int agendamentoId,
+            DateTime dataHoraFim)
+        {
+            const string sql = @"
+                UPDATE Agendamentos
+                SET
+                    DataHoraFim = @DataHoraFim,
+                    DataAtualizacao = NOW()
+                WHERE Id = @Id;
+            ";
+
+            using var connection = _connectionFactory.CreateConnection();
+
+            await connection.ExecuteAsync(
+                sql,
+                new
+                {
+                    Id = agendamentoId,
+                    DataHoraFim = dataHoraFim
+                });
         }
     }
 }
