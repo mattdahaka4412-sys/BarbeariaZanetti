@@ -17,5 +17,10 @@ namespace BarbeariaZanetti.Web.Services
         {
             return await _usuarioRepository.BuscarPorLoginAsync(login);
         }
+
+        public async Task<IEnumerable<Usuario>> BuscarBarbeirosAsync()
+        {
+            return await _usuarioRepository.BuscarBarbeirosAsync();
+        }
     }
 }

@@ -36,5 +36,27 @@ namespace BarbeariaZanetti.Web.Repositories
                 sql,
                 new { Login = login });
         }
+
+        public async Task<IEnumerable<Usuario>> BuscarBarbeirosAsync()
+        {
+            const string sql = @"
+                SELECT
+                    Id,
+                    Nome,
+                    Login,
+                    SenhaHash,
+                    PerfilId,
+                    Ativo,
+                    DataCriacao,
+                    DataAtualizacao
+                FROM Usuarios
+                WHERE PerfilId = 2
+                  AND Ativo = 1
+                ORDER BY Nome;";
+
+            using var connection = _connectionFactory.CreateConnection();
+
+            return await connection.QueryAsync<Usuario>(sql);
+        }
     }
 }

@@ -11,15 +11,18 @@ namespace BarbeariaZanetti.Web.Controllers
         private readonly IAgendamentoService _agendamentoService;
         private readonly IClienteService _clienteService;
         private readonly IServicoService _servicoService;
+        private readonly IUsuarioService _usuarioService;
 
         public AgendaController(
             IAgendamentoService agendamentoService,
             IClienteService clienteService,
-            IServicoService servicoService)
+            IServicoService servicoService,
+            IUsuarioService usuarioService)
         {
             _agendamentoService = agendamentoService;
             _clienteService = clienteService;
             _servicoService = servicoService;
+            _usuarioService = usuarioService;
         }
 
         [HttpGet]
@@ -45,27 +48,44 @@ namespace BarbeariaZanetti.Web.Controllers
                 anoSelecionado = dataAtual.Year;
             }
 
-            var primeiroDiaDoMes = new DateTime(anoSelecionado, mesSelecionado, 1);
+            var primeiroDiaDoMes = new DateTime(
+                anoSelecionado,
+                mesSelecionado,
+                1);
 
             var model = new AgendaViewModel
             {
-                EhAdministrador = SessionHelper.UsuarioEhAdministrador(HttpContext),
-                UsuarioId = SessionHelper.ObterUsuarioId(HttpContext)!.Value,
-                UsuarioNome = SessionHelper.ObterUsuarioNome(HttpContext) ?? string.Empty,
+                EhAdministrador =
+                    SessionHelper.UsuarioEhAdministrador(HttpContext),
+
+                UsuarioId =
+                    SessionHelper.ObterUsuarioId(HttpContext)!.Value,
+
+                UsuarioNome =
+                    SessionHelper.ObterUsuarioNome(HttpContext)
+                    ?? string.Empty,
 
                 AnoSelecionado = anoSelecionado,
                 MesSelecionado = mesSelecionado,
-                NomeMes = primeiroDiaDoMes.ToString(
-                "MMMM yyyy",
-                new System.Globalization.CultureInfo("pt-BR")),
 
-                Clientes = await _clienteService.BuscarTodosAsync(),
-                Servicos = await _servicoService.BuscarTodosAsync()
+                NomeMes = primeiroDiaDoMes.ToString(
+                    "MMMM yyyy",
+                    new System.Globalization.CultureInfo("pt-BR")),
+
+                Clientes =
+                    await _clienteService.BuscarTodosAsync(),
+
+                Servicos =
+                    await _servicoService.BuscarTodosAsync(),
+
+                Barbeiros =
+                    await _usuarioService.BuscarBarbeirosAsync()
             };
 
             return View(model);
         }
 
+        [HttpPost]
         [HttpPost]
         public async Task<IActionResult> Criar(NovoAgendamentoViewModel model)
         {
@@ -76,9 +96,25 @@ namespace BarbeariaZanetti.Web.Controllers
 
             var usuarioId = SessionHelper.ObterUsuarioId(HttpContext);
 
-            if (usuarioId == null)
+            if (!usuarioId.HasValue)
             {
                 return RedirectToAction("Index", "Login");
+            }
+
+            int barbeiroId;
+
+            if (SessionHelper.UsuarioEhAdministrador(HttpContext))
+            {
+                if (!model.BarbeiroId.HasValue)
+                {
+                    return RedirectToAction("Index");
+                }
+
+                barbeiroId = model.BarbeiroId.GetValueOrDefault();
+            }
+            else
+            {
+                barbeiroId = usuarioId.GetValueOrDefault();
             }
 
             var dataHoraInicio = model.Data.Date + model.HoraInicio;
@@ -87,7 +123,7 @@ namespace BarbeariaZanetti.Web.Controllers
             var agendamento = new Agendamento
             {
                 ClienteId = model.ClienteId,
-                BarbeiroId = usuarioId.Value,
+                BarbeiroId = barbeiroId,
                 ServicoId = model.ServicoId,
                 StatusId = 1,
                 FormaPagamentoId = null,

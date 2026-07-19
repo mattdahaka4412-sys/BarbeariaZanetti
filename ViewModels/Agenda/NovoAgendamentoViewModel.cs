@@ -6,6 +6,9 @@ namespace BarbeariaZanetti.Web.ViewModels.Agenda
 
         public int ServicoId { get; set; }
 
+        // Apenas o Admin preencherá esse campo
+        public int? BarbeiroId { get; set; }
+
         public DateTime Data { get; set; }
 
         public TimeSpan HoraInicio { get; set; }

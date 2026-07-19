@@ -201,20 +201,49 @@
             <form asp-controller="Agenda" asp-action="Criar" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title">Novo Agendamento</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal">
+                    </button>
                 </div>
 
                 <div class="modal-body">
                     <div class="row">
+                        @if (Model.EhAdministrador)
+                        {
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Barbeiro</label>
+
+                                <select id="barbeiroSelect"
+                                        name="BarbeiroId"
+                                        class="form-select zanetti-input"
+                                        required>
+                                    <option value="">Selecione um barbeiro</option>
+
+                                    @foreach (var barbeiro in Model.Barbeiros)
+                                    {
+                                        <option value="@barbeiro.Id">
+                                            @barbeiro.Nome
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                        }
+
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Cliente</label>
 
-                            <select name="ClienteId" class="form-select zanetti-input" required>
+                            <select name="ClienteId"
+                                    class="form-select zanetti-input"
+                                    required>
                                 <option value="">Selecione um cliente</option>
 
                                 @foreach (var cliente in Model.Clientes)
                                 {
-                                    <option value="@cliente.Id">@cliente.Nome</option>
+                                    <option value="@cliente.Id">
+                                        @cliente.Nome
+                                    </option>
                                 }
                             </select>
                         </div>
@@ -222,7 +251,10 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Serviço</label>
 
-                            <select id="servicoSelect" name="ServicoId" class="form-select zanetti-input" required>
+                            <select id="servicoSelect"
+                                    name="ServicoId"
+                                    class="form-select zanetti-input"
+                                    required>
                                 <option value="">Selecione um serviço</option>
 
                                 @foreach (var servico in Model.Servicos)
@@ -237,22 +269,35 @@
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Data</label>
-                            <input name="Data" type="date" class="form-control zanetti-input" required />
+
+                            <input id="dataAgendamento"
+                                   name="Data"
+                                   type="date"
+                                   class="form-control zanetti-input"
+                                   required />
                         </div>
 
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Hora Início</label>
-                            <input id="dataAgendamento" name="Data" type="date"
-                           class="form-control zanetti-input"  required />
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Hora</label>
+
+                            <input name="HoraInicio"
+                                   type="time"
+                                   class="form-control zanetti-input"
+                                   required />
                         </div>
 
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Hora Fim</label>
-                            <input name="HoraFim" type="time" class="form-control zanetti-input" required />
+
+                            <input name="HoraFim"
+                                   type="time"
+                                   class="form-control zanetti-input"
+                                   required />
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Valor</label>
+
                             <input id="valorCobrado"
                                    name="ValorCobrado"
                                    type="text"
@@ -261,16 +306,9 @@
                                    required />
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Barbeiro</label>
-                            <input type="text"
-                                   class="form-control zanetti-input"
-                                   value="@Model.UsuarioNome"
-                                   readonly />
-                        </div>
-
                         <div class="col-12 mb-3">
                             <label class="form-label">Observação</label>
+
                             <textarea name="Observacao"
                                       class="form-control zanetti-input"
                                       rows="3"
@@ -280,8 +318,16 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn-secondary-zanetti" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn-primary-zanetti">Salvar Agendamento</button>
+                    <button type="button"
+                            class="btn-secondary-zanetti"
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="submit"
+                            class="btn-primary-zanetti">
+                        Salvar Agendamento
+                    </button>
                 </div>
             </form>
         </div>

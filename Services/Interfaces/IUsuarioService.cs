@@ -5,5 +5,7 @@ namespace BarbeariaZanetti.Web.Services.Interfaces
     public interface IUsuarioService
     {
         Task<Usuario?> BuscarPorLoginAsync(string login);
+
+        Task<IEnumerable<Usuario>> BuscarBarbeirosAsync();
     }
 }
