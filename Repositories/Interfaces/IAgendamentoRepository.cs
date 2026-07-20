@@ -6,6 +6,10 @@ namespace BarbeariaZanetti.Web.Repositories.Interfaces
     {
         Task<IEnumerable<Agendamento>> BuscarPorDataAsync(DateTime data);
 
+        Task<IEnumerable<Agendamento>> BuscarPorMesAsync(
+            int ano,
+            int mes);
+
         Task<IEnumerable<Agendamento>> BuscarPorBarbeiroEDataAsync(
             int barbeiroId,
             DateTime data);

@@ -79,7 +79,12 @@ namespace BarbeariaZanetti.Web.Controllers
                     await _servicoService.BuscarTodosAsync(),
 
                 Barbeiros =
-                    await _usuarioService.BuscarBarbeirosAsync()
+                    await _usuarioService.BuscarBarbeirosAsync(),
+
+                Agendamentos =
+                    await _agendamentoService.BuscarPorMesAsync(
+                    anoSelecionado,
+                    mesSelecionado)
             };
 
             return View(model);

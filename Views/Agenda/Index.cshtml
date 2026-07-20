@@ -1,5 +1,8 @@
 @model BarbeariaZanetti.Web.ViewModels.Agenda.AgendaViewModel
 
+@using System.Globalization
+@using System.Text.Json
+
 @{
     ViewData["Title"] = "Agenda";
 
@@ -17,7 +20,135 @@
     var mesAnterior = primeiroDia.AddMonths(-1);
 
     var proximoMes = primeiroDia.AddMonths(1);
+
+    var cultura = new CultureInfo("pt-BR");
+
+    /*
+     * O administrador enxerga todos os agendamentos.
+     * O barbeiro enxerga somente os próprios agendamentos.
+     */
+    var agendamentosVisiveis = Model.EhAdministrador
+        ? Model.Agendamentos.ToList()
+        : Model.Agendamentos
+            .Where(a => a.BarbeiroId == Model.UsuarioId)
+            .ToList();
+
+    /*
+     * Monta os dados que serão enviados ao agenda.js.
+     */
+    var agendaPorDia = new Dictionary<int, object>();
+
+    var gruposPorDia = agendamentosVisiveis
+        .GroupBy(a => a.DataHoraInicio.Day)
+        .OrderBy(g => g.Key);
+
+    foreach (var grupo in gruposPorDia)
+    {
+        var atendimentos = grupo
+            .OrderBy(a => a.BarbeiroId)
+            .ThenBy(a => a.DataHoraInicio)
+            .Select(a =>
+            {
+                var cliente = Model.Clientes
+                    .FirstOrDefault(c => c.Id == a.ClienteId);
+
+                var servico = Model.Servicos
+                    .FirstOrDefault(s => s.Id == a.ServicoId);
+
+                var barbeiro = Model.Barbeiros
+                    .FirstOrDefault(b => b.Id == a.BarbeiroId);
+
+                    return new
+                    {
+                        barbeiroId = a.BarbeiroId,
+
+                        hora = a.DataHoraInicio.ToString("HH:mm"),
+
+                        horaFim = a.DataHoraFim.ToString("HH:mm"),
+
+                        cliente = cliente?.Nome
+                            ?? "Cliente não encontrado",
+
+                        servico = servico?.Nome
+                            ?? "Serviço não encontrado",
+
+                        barbeiro = barbeiro?.Nome
+                            ?? "Barbeiro não encontrado",
+
+                        valor = a.ValorCobrado.ToString(
+                        "C",
+                        cultura)
+                    };
+            })
+            .ToList();
+
+        var quantidade = atendimentos.Count;
+
+        var status = quantidade switch
+        {
+            0 => "free",
+            <= 4 => "low",
+            <= 8 => "medium",
+            <= 14 => "high",
+            _ => "full"
+        };
+
+        var ocupado = status switch
+        {
+            "low" => 25,
+            "medium" => 55,
+            "high" => 85,
+            "full" => 100,
+            _ => 0
+        };
+
+        var textoLivre = status switch
+        {
+            "full" => "Agenda lotada",
+            "high" => "Pouco tempo disponível",
+            "medium" => "Horários disponíveis",
+            "low" => "Agenda tranquila",
+            _ => "Dia livre"
+        };
+
+        var dataDoDia = new DateTime(
+            ano,
+            mes,
+            grupo.Key);
+
+        var nomeDiaSemana = cultura.DateTimeFormat
+            .GetDayName(dataDoDia.DayOfWeek);
+
+        agendaPorDia[grupo.Key] = new
+        {
+            status,
+            clientes = quantidade,
+            ocupado,
+            livres = textoLivre,
+
+            dia = cultura.TextInfo.ToTitleCase(
+                nomeDiaSemana),
+
+            data = dataDoDia.ToString(
+                "dd 'de' MMMM 'de' yyyy",
+                cultura),
+
+            atendimentos
+        };
+    }
+
+    var agendaJson = JsonSerializer.Serialize(
+        agendaPorDia,
+        new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
 }
+
+<div id="agendaConfiguracao"
+     data-ano="@Model.AnoSelecionado"
+     data-mes="@Model.MesSelecionado">
+</div>
 
 <div class="page-header">
     <div>
@@ -28,26 +159,36 @@
     <div class="d-flex gap-2">
         @if (Model.EhAdministrador)
         {
-            <button class="btn-secondary-zanetti" data-bs-toggle="modal" data-bs-target="#modalCliente">
+            <button class="btn-secondary-zanetti"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalCliente">
+
                 + Novo Cliente
             </button>
         }
 
-        <button class="btn-primary-zanetti" data-bs-toggle="modal" data-bs-target="#modalAgendamento">
+        <button class="btn-primary-zanetti"
+                data-bs-toggle="modal"
+                data-bs-target="#modalAgendamento">
+
             + Novo Agendamento
         </button>
     </div>
 </div>
 
 <div class="agenda-layout">
+
     <section class="calendar-card">
+
         <div class="calendar-header">
+
             <a asp-controller="Agenda"
                asp-action="Index"
                asp-route-mes="@mesAnterior.Month"
                asp-route-ano="@mesAnterior.Year"
                class="calendar-nav"
                title="Mês anterior">
+
                 <i class="bi bi-chevron-left"></i>
             </a>
 
@@ -59,8 +200,10 @@
                asp-route-ano="@proximoMes.Year"
                class="calendar-nav"
                title="Próximo mês">
+
                 <i class="bi bi-chevron-right"></i>
             </a>
+
         </div>
 
         <div class="calendar-weekdays">
@@ -74,6 +217,7 @@
         </div>
 
         <div class="calendar-grid">
+
             @for (int i = 0; i < espacosInicio; i++)
             {
                 <div class="calendar-day empty"></div>
@@ -81,28 +225,29 @@
 
             @for (int dia = 1; dia <= diasNoMes; dia++)
             {
-                var classe = dia switch
+                var dataDoDia = new DateTime(
+                    ano,
+                    mes,
+                    dia);
+
+                var quantidadeAgendamentos = agendamentosVisiveis
+                    .Count(a =>
+                        a.DataHoraInicio.Date
+                        == dataDoDia.Date);
+
+                var classe = quantidadeAgendamentos switch
                 {
-                    5 => "low",
-                    8 => "medium",
-                    12 => "high",
-                    20 => "full",
-                    _ => "free"
+                    0 => "free",
+                    <= 4 => "low",
+                    <= 8 => "medium",
+                    <= 14 => "high",
+                    _ => "full"
                 };
 
-                var clientes = dia switch
-                {
-                    5 => "2",
-                    8 => "5",
-                    12 => "8",
-                    20 => "12",
-                    _ => "0"
-                };
-
-               <button type="button"
-                    class="calendar-day @classe"
-                    data-dia="@dia"
-                    onclick="selecionarDia(@dia, @mes, @ano)">
+                <button type="button"
+                        class="calendar-day @classe"
+                        data-dia="@dia"
+                        onclick="selecionarDia(@dia, @mes, @ano)">
 
                     <span>@dia</span>
 
@@ -110,116 +255,241 @@
                         <div class="day-progress-fill"></div>
                     </div>
 
-                    <small>👥 @clientes</small>
+                    <small>
+                        👥 @quantidadeAgendamentos
+                    </small>
 
                 </button>
             }
+
         </div>
+
     </section>
 
     <section class="day-schedule-card">
+
         <div class="selected-day-header">
+
             <div>
-                <h3 id="selectedDayName">Dia selecionado</h3>
-                <p id="selectedDayDate">@hoje.ToString("dd 'de' MMMM 'de' yyyy")</p>
+                <h3 id="selectedDayName">
+                    Dia selecionado
+                </h3>
+
+                <p id="selectedDayDate">
+                    @hoje.ToString(
+                        "dd 'de' MMMM 'de' yyyy",
+                        cultura)
+                </p>
             </div>
 
-            <span id="dayStatus" class="day-status status-free">Livre</span>
+            <span id="dayStatus"
+                  class="day-status status-free">
+
+                Livre
+            </span>
+
         </div>
 
         <div class="day-occupation">
+
             <div class="occupation-info">
-                <strong id="occupationText">0% ocupado</strong>
-                <span id="clientsText">0 cliente(s) agendado(s)</span>
+
+                <strong id="occupationText">
+                    0% ocupado
+                </strong>
+
+                <span id="clientsText">
+                    0 cliente(s) agendado(s)
+                </span>
+
             </div>
 
             <div class="occupation-info">
+
                 <span>Tempo disponível</span>
-                <strong id="freeTimeText">12h livres</strong>
+
+                <strong id="freeTimeText">
+                    Dia livre
+                </strong>
+
             </div>
 
             <div class="occupation-bar">
-                <div id="occupationFill" class="occupation-fill free" style="width:0%;"></div>
+
+                <div id="occupationFill"
+                     class="occupation-fill free"
+                     style="width: 0%;">
+                </div>
+
             </div>
+
         </div>
 
-        <div id="appointmentList" class="appointment-list">
+        <div id="appointmentList"
+             class="appointment-list">
+
             <div class="agenda-empty-state">
-                <h3>Nenhum agendamento para este dia</h3>
-                <p>Clique em <strong>Novo Agendamento</strong> para cadastrar um atendimento.</p>
+
+                <h3>
+                    Nenhum agendamento para este dia
+                </h3>
+
+                <p>
+                    Clique em
+                    <strong>Novo Agendamento</strong>
+                    para cadastrar um atendimento.
+                </p>
+
             </div>
+
         </div>
+
     </section>
+
 </div>
 
 @if (Model.EhAdministrador)
 {
-    <div class="modal fade" id="modalCliente" tabindex="-1" aria-hidden="true">
+    <div class="modal fade"
+         id="modalCliente"
+         tabindex="-1"
+         aria-hidden="true">
+
         <div class="modal-dialog modal-dialog-centered">
+
             <div class="modal-content zanetti-modal">
-                <form asp-controller="Cliente" asp-action="Criar" method="post">
+
+                <form asp-controller="Cliente"
+                      asp-action="Criar"
+                      method="post">
+
                     <div class="modal-header">
-                        <h5 class="modal-title">Novo Cliente</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+
+                        <h5 class="modal-title">
+                            Novo Cliente
+                        </h5>
+
+                        <button type="button"
+                                class="btn-close btn-close-white"
+                                data-bs-dismiss="modal">
+                        </button>
+
                     </div>
 
                     <div class="modal-body">
+
                         <div class="mb-3">
-                            <label class="form-label">Nome</label>
-                            <input name="Nome" class="form-control zanetti-input" placeholder="Nome do cliente" required />
+
+                            <label class="form-label">
+                                Nome
+                            </label>
+
+                            <input name="Nome"
+                                   class="form-control zanetti-input"
+                                   placeholder="Nome do cliente"
+                                   required />
+
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Telefone</label>
-                            <input name="Telefone" class="form-control zanetti-input" placeholder="(00) 00000-0000" />
+
+                            <label class="form-label">
+                                Telefone
+                            </label>
+
+                            <input name="Telefone"
+                                   class="form-control zanetti-input"
+                                   placeholder="(00) 00000-0000" />
+
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Observação</label>
-                            <textarea name="Observacao" class="form-control zanetti-input" rows="3" placeholder="Opcional"></textarea>
+
+                            <label class="form-label">
+                                Observação
+                            </label>
+
+                            <textarea name="Observacao"
+                                      class="form-control zanetti-input"
+                                      rows="3"
+                                      placeholder="Opcional"></textarea>
+
                         </div>
+
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn-secondary-zanetti" data-bs-dismiss="modal">
+
+                        <button type="button"
+                                class="btn-secondary-zanetti"
+                                data-bs-dismiss="modal">
+
                             Cancelar
                         </button>
 
-                        <button type="submit" class="btn-primary-zanetti">
+                        <button type="submit"
+                                class="btn-primary-zanetti">
+
                             Salvar Cliente
                         </button>
+
                     </div>
+
                 </form>
+
             </div>
+
         </div>
+
     </div>
 }
 
-<div class="modal fade" id="modalAgendamento" tabindex="-1" aria-hidden="true">
+<div class="modal fade"
+     id="modalAgendamento"
+     tabindex="-1"
+     aria-hidden="true">
+
     <div class="modal-dialog modal-dialog-centered modal-lg">
+
         <div class="modal-content zanetti-modal">
-            <form asp-controller="Agenda" asp-action="Criar" method="post">
+
+            <form asp-controller="Agenda"
+                  asp-action="Criar"
+                  method="post">
+
                 <div class="modal-header">
-                    <h5 class="modal-title">Novo Agendamento</h5>
+
+                    <h5 class="modal-title">
+                        Novo Agendamento
+                    </h5>
 
                     <button type="button"
                             class="btn-close btn-close-white"
                             data-bs-dismiss="modal">
                     </button>
+
                 </div>
 
                 <div class="modal-body">
+
                     <div class="row">
+
                         @if (Model.EhAdministrador)
                         {
                             <div class="col-12 mb-3">
-                                <label class="form-label">Barbeiro</label>
+
+                                <label class="form-label">
+                                    Barbeiro
+                                </label>
 
                                 <select id="barbeiroSelect"
                                         name="BarbeiroId"
                                         class="form-select zanetti-input"
                                         required>
-                                    <option value="">Selecione um barbeiro</option>
+
+                                    <option value="">
+                                        Selecione um barbeiro
+                                    </option>
 
                                     @foreach (var barbeiro in Model.Barbeiros)
                                     {
@@ -227,17 +497,25 @@
                                             @barbeiro.Nome
                                         </option>
                                     }
+
                                 </select>
+
                             </div>
                         }
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Cliente</label>
+
+                            <label class="form-label">
+                                Cliente
+                            </label>
 
                             <select name="ClienteId"
                                     class="form-select zanetti-input"
                                     required>
-                                <option value="">Selecione um cliente</option>
+
+                                <option value="">
+                                    Selecione um cliente
+                                </option>
 
                                 @foreach (var cliente in Model.Clientes)
                                 {
@@ -245,49 +523,73 @@
                                         @cliente.Nome
                                     </option>
                                 }
+
                             </select>
+
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Serviço</label>
+
+                            <label class="form-label">
+                                Serviço
+                            </label>
 
                             <select id="servicoSelect"
                                     name="ServicoId"
                                     class="form-select zanetti-input"
                                     required>
-                                <option value="">Selecione um serviço</option>
+
+                                <option value="">
+                                    Selecione um serviço
+                                </option>
 
                                 @foreach (var servico in Model.Servicos)
                                 {
                                     <option value="@servico.Id"
-                                            data-valor="@servico.ValorPadrao.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                                            data-valor="@servico.ValorPadrao.ToString(CultureInfo.InvariantCulture)">
+
                                         @servico.Nome
                                     </option>
                                 }
+
                             </select>
+
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Data</label>
+
+                            <label class="form-label">
+                                Data
+                            </label>
 
                             <input id="dataAgendamento"
                                    name="Data"
                                    type="date"
                                    class="form-control zanetti-input"
                                    required />
+
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Hora</label>
+
+                            <label class="form-label">
+                                Hora
+                            </label>
 
                             <input name="HoraInicio"
                                    type="time"
+                                   min="08:00"
+                                   max="19:00"
                                    class="form-control zanetti-input"
                                    required />
+
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Valor</label>
+
+                            <label class="form-label">
+                                Valor
+                            </label>
 
                             <input id="valorCobrado"
                                    name="ValorCobrado"
@@ -295,32 +597,51 @@
                                    class="form-control zanetti-input"
                                    placeholder="0,00"
                                    required />
+
                         </div>
 
                         <div class="col-12 mb-3">
-                            <label class="form-label">Observação</label>
+
+                            <label class="form-label">
+                                Observação
+                            </label>
 
                             <textarea name="Observacao"
                                       class="form-control zanetti-input"
                                       rows="3"
                                       placeholder="Opcional"></textarea>
+
                         </div>
+
                     </div>
+
                 </div>
 
                 <div class="modal-footer">
+
                     <button type="button"
                             class="btn-secondary-zanetti"
                             data-bs-dismiss="modal">
+
                         Cancelar
                     </button>
 
                     <button type="submit"
                             class="btn-primary-zanetti">
+
                         Salvar Agendamento
                     </button>
+
                 </div>
+
             </form>
+
         </div>
+
     </div>
+
 </div>
+
+<script>
+    window.agendaData = @Html.Raw(agendaJson);
+</script>

@@ -18,6 +18,15 @@ namespace BarbeariaZanetti.Web.Services
             return await _repository.BuscarPorDataAsync(data);
         }
 
+        public async Task<IEnumerable<Agendamento>> BuscarPorMesAsync(
+            int ano,
+            int mes)
+        {
+            return await _repository.BuscarPorMesAsync(
+                ano,
+                mes);
+        }
+
         public async Task<Agendamento?> BuscarPorIdAsync(int id)
         {
             return await _repository.BuscarPorIdAsync(id);

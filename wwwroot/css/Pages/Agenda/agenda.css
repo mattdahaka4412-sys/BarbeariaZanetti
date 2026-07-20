@@ -93,3 +93,40 @@
     transform: scale(.98);
 
 }
+
+.barber-agenda-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+    margin-bottom: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+    background: rgba(176, 141, 87, 0.08);
+}
+
+.barber-agenda-header:first-child {
+    margin-top: 0;
+}
+
+.barber-agenda-header i {
+    font-size: 30px;
+    color: var(--gold);
+}
+
+.barber-agenda-header div {
+    display: flex;
+    flex-direction: column;
+}
+
+.barber-agenda-header strong {
+    color: var(--text);
+    font-size: 16px;
+}
+
+.barber-agenda-header small {
+    color: var(--text-secondary);
+    font-size: 12px;
+}

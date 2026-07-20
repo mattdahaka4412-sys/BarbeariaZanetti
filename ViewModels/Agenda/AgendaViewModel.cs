@@ -1,6 +1,7 @@
 using ClienteModel = BarbeariaZanetti.Web.Models.Cliente;
 using ServicoModel = BarbeariaZanetti.Web.Models.Servico;
 using UsuarioModel = BarbeariaZanetti.Web.Models.Usuario;
+using AgendamentoModel = BarbeariaZanetti.Web.Models.Agendamento;
 
 namespace BarbeariaZanetti.Web.ViewModels.Agenda
 {
@@ -26,5 +27,8 @@ namespace BarbeariaZanetti.Web.ViewModels.Agenda
 
         public IEnumerable<UsuarioModel> Barbeiros { get; set; }
             = new List<UsuarioModel>();
+
+        public IEnumerable<AgendamentoModel> Agendamentos { get; set; }
+            = new List<AgendamentoModel>();
     }
 }

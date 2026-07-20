@@ -1,67 +1,15 @@
-const agendaData = {
-    5: {
-        status: "low",
-        clientes: 2,
-        ocupado: 25,
-        livres: "9h00 livres",
-        dia: "Domingo",
-        data: "05 de julho de 2026",
-        atendimentos: [
-            { hora: "09:15", cliente: "João Silva", servico: "Corte", barbeiro: "Administrador", valor: "R$ 40,00" },
-            { hora: "14:40", cliente: "Pedro Santos", servico: "Barba", barbeiro: "Administrador", valor: "R$ 30,00" }
-        ]
-    },
+const agendaData = window.agendaData ?? {};
 
-    8: {
-        status: "medium",
-        clientes: 5,
-        ocupado: 55,
-        livres: "5h20 livres",
-        dia: "Quarta-feira",
-        data: "08 de julho de 2026",
-        atendimentos: [
-            { hora: "09:00", cliente: "Carlos Lima", servico: "Corte", barbeiro: "Administrador", valor: "R$ 40,00" },
-            { hora: "10:40", cliente: "Marcos Souza", servico: "Corte + Barba", barbeiro: "Administrador", valor: "R$ 60,00" },
-            { hora: "14:15", cliente: "Lucas Oliveira", servico: "Barba", barbeiro: "Administrador", valor: "R$ 30,00" }
-        ]
-    },
+function selecionarDia(dia, mes, ano) {
+    const chaveDia = String(dia);
 
-    12: {
-        status: "high",
-        clientes: 8,
-        ocupado: 85,
-        livres: "1h40 livre",
-        dia: "Domingo",
-        data: "12 de julho de 2026",
-        atendimentos: [
-            { hora: "08:00", cliente: "Rafael", servico: "Corte", barbeiro: "Administrador", valor: "R$ 40,00" },
-            { hora: "09:20", cliente: "Bruno", servico: "Corte + Barba", barbeiro: "Administrador", valor: "R$ 60,00" },
-            { hora: "11:00", cliente: "Felipe", servico: "Barba", barbeiro: "Administrador", valor: "R$ 30,00" }
-        ]
-    },
-
-    20: {
-        status: "full",
-        clientes: 12,
-        ocupado: 100,
-        livres: "Agenda lotada",
-        dia: "Segunda-feira",
-        data: "20 de julho de 2026",
-        atendimentos: [
-            { hora: "08:00", cliente: "Agenda cheia", servico: "Dia sem horários disponíveis", barbeiro: "Administrador", valor: "—" }
-        ]
-    }
-};
-
-function selecionarDia(dia) {
-
-    const data = agendaData[dia] ?? {
+    const data = agendaData[chaveDia] ?? {
         status: "free",
         clientes: 0,
         ocupado: 0,
-        livres: "12h livres",
-        dia: "Dia selecionado",
-        data: `${dia} de julho de 2026`,
+        livres: "Dia livre",
+        dia: obterNomeDiaSemana(dia, mes, ano),
+        data: formatarData(dia, mes, ano),
         atendimentos: []
     };
 
@@ -69,68 +17,129 @@ function selecionarDia(dia) {
         btn.classList.remove("selected");
     });
 
-    const botao = document.querySelector(`[data-dia='${dia}']`);
+    const botao = document.querySelector(
+        `.calendar-day[data-dia="${dia}"]`
+    );
 
     if (botao) {
         botao.classList.add("selected");
     }
 
-    document.getElementById("selectedDayName").innerText = data.dia;
-    document.getElementById("selectedDayDate").innerText = data.data;
-    document.getElementById("dayStatus").innerText = getStatusText(data.status);
-    document.getElementById("dayStatus").className = `day-status status-${data.status}`;
-    document.getElementById("occupationText").innerText = `${data.ocupado}% ocupado`;
-    document.getElementById("clientsText").innerText = `${data.clientes} cliente(s) agendado(s)`;
-    document.getElementById("freeTimeText").innerText = data.livres;
+    document.getElementById("selectedDayName").innerText =
+        capitalizarTexto(data.dia);
 
-    const fill = document.getElementById("occupationFill");
-    fill.style.width = `${data.ocupado}%`;
-    fill.className = `occupation-fill ${data.status}`;
+    document.getElementById("selectedDayDate").innerText =
+        capitalizarTexto(data.data);
 
-    const lista = document.getElementById("appointmentList");
+    const statusElement =
+        document.getElementById("dayStatus");
+
+    statusElement.innerText =
+        getStatusText(data.status);
+
+    statusElement.className =
+        `day-status status-${data.status}`;
+
+    document.getElementById("occupationText").innerText =
+        `${data.ocupado}% ocupado`;
+
+    document.getElementById("clientsText").innerText =
+        `${data.clientes} cliente(s) agendado(s)`;
+
+    document.getElementById("freeTimeText").innerText =
+        data.livres;
+
+    const fill =
+        document.getElementById("occupationFill");
+
+    fill.style.width =
+        `${data.ocupado}%`;
+
+    fill.className =
+        `occupation-fill ${data.status}`;
+
+    const lista =
+        document.getElementById("appointmentList");
+
     lista.innerHTML = "";
 
     if (data.atendimentos.length === 0) {
-
         lista.innerHTML = `
             <div class="agenda-empty-state">
                 <h3>Nenhum agendamento para este dia</h3>
-                <p>Clique em <strong>Novo Agendamento</strong> para cadastrar um atendimento.</p>
+
+                <p>
+                    Clique em <strong>Novo Agendamento</strong>
+                    para cadastrar um atendimento.
+                </p>
             </div>
         `;
+
+        preencherDataDoModal(dia, mes, ano);
 
         return;
     }
 
-    data.atendimentos.forEach(item => {
+    const gruposPorBarbeiro = data.atendimentos.reduce(
+        (grupos, atendimento) => {
+            const nomeBarbeiro = atendimento.barbeiro;
 
+                if (!grupos[nomeBarbeiro]) {
+                grupos[nomeBarbeiro] = [];
+                }
+
+                grupos[nomeBarbeiro].push(atendimento);
+
+                return grupos;
+        },
+        {}
+    );
+
+    Object.entries(gruposPorBarbeiro).forEach(
+    ([nomeBarbeiro, atendimentos]) => {
         lista.innerHTML += `
-            <div class="appointment-card">
+            <div class="barber-agenda-header">
+                <i class="bi bi-person-circle"></i>
 
-                <div class="appointment-time">
-                    ${item.hora}
+                <div>
+                    <strong>${nomeBarbeiro}</strong>
+                    <small>
+                        ${atendimentos.length}
+                        atendimento(s)
+                    </small>
                 </div>
-
-                <div class="appointment-info">
-                    <strong>${item.cliente}</strong>
-                    <span>${item.servico}</span>
-                    <small>Barbeiro: ${item.barbeiro}</small>
-                </div>
-
-                <div class="appointment-value">
-                    ${item.valor}
-                </div>
-
             </div>
         `;
-    });
 
+        atendimentos.forEach(item => {
+            lista.innerHTML += `
+                <div class="appointment-card">
+
+                    <div class="appointment-time">
+                        <strong>${item.hora}</strong>
+                        <small>${item.horaFim}</small>
+                    </div>
+
+                    <div class="appointment-info">
+                        <strong>${item.cliente}</strong>
+                        <span>${item.servico}</span>
+                    </div>
+
+                    <div class="appointment-value">
+                        ${item.valor}
+                    </div>
+
+                </div>
+            `;
+        });
+    }
+    );
+
+    preencherDataDoModal(dia, mes, ano);
 }
 
 function getStatusText(status) {
-
     switch (status) {
-
         case "low":
             return "Tranquilo";
 
@@ -146,36 +155,149 @@ function getStatusText(status) {
         default:
             return "Livre";
     }
-
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function obterNomeDiaSemana(dia, mes, ano) {
+    const data = new Date(
+        ano,
+        mes - 1,
+        dia
+    );
 
-    selecionarDia(new Date().getDate());
-
-    const servicoSelect = document.getElementById("servicoSelect");
-    const valorInput = document.getElementById("valorCobrado");
-
-    if (!servicoSelect || !valorInput)
-        return;
-
-    servicoSelect.addEventListener("change", function () {
-
-        const option = this.options[this.selectedIndex];
-        const valor = option.dataset.valor;
-
-        if (!valor) {
-
-            valorInput.value = "";
-            return;
-
+    return data.toLocaleDateString(
+        "pt-BR",
+        {
+            weekday: "long"
         }
+    );
+}
 
-        valorInput.value = Number(valor).toLocaleString("pt-BR", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+function formatarData(dia, mes, ano) {
+    const data = new Date(
+        ano,
+        mes - 1,
+        dia
+    );
 
-    });
+    return data.toLocaleDateString(
+        "pt-BR",
+        {
+            day: "2-digit",
+            month: "long",
+            year: "numeric"
+        }
+    );
+}
 
-});
+function capitalizarTexto(texto) {
+    if (!texto) {
+        return "";
+    }
+
+    return texto.charAt(0).toUpperCase()
+        + texto.slice(1);
+}
+
+function preencherDataDoModal(dia, mes, ano) {
+    const campoData =
+        document.getElementById("dataAgendamento");
+
+    if (!campoData) {
+        return;
+    }
+
+    const mesFormatado =
+        String(mes).padStart(2, "0");
+
+    const diaFormatado =
+        String(dia).padStart(2, "0");
+
+    campoData.value =
+        `${ano}-${mesFormatado}-${diaFormatado}`;
+}
+
+function selecionarDiaInicial() {
+    const configuracao =
+        document.getElementById("agendaConfiguracao");
+
+    if (!configuracao) {
+        return;
+    }
+
+    const anoCalendario =
+        Number(configuracao.dataset.ano);
+
+    const mesCalendario =
+        Number(configuracao.dataset.mes);
+
+    const hoje = new Date();
+
+    const calendarioEhMesAtual =
+        hoje.getFullYear() === anoCalendario
+        && hoje.getMonth() + 1 === mesCalendario;
+
+    let diaInicial;
+
+    if (calendarioEhMesAtual) {
+        diaInicial = hoje.getDate();
+    } else {
+        const diasComAgendamento =
+            Object.keys(agendaData)
+                .map(Number)
+                .sort((a, b) => a - b);
+
+        diaInicial =
+            diasComAgendamento[0] ?? 1;
+    }
+
+    selecionarDia(
+        diaInicial,
+        mesCalendario,
+        anoCalendario
+    );
+}
+
+function configurarValorDoServico() {
+    const servicoSelect =
+        document.getElementById("servicoSelect");
+
+    const valorInput =
+        document.getElementById("valorCobrado");
+
+    if (!servicoSelect || !valorInput) {
+        return;
+    }
+
+    servicoSelect.addEventListener(
+        "change",
+        function () {
+            const option =
+                this.options[this.selectedIndex];
+
+            const valor =
+                option.dataset.valor;
+
+            if (!valor) {
+                valorInput.value = "";
+                return;
+            }
+
+            valorInput.value =
+                Number(valor).toLocaleString(
+                    "pt-BR",
+                    {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }
+                );
+        }
+    );
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+        selecionarDiaInicial();
+        configurarValorDoServico();
+    }
+);

@@ -77,6 +77,44 @@ namespace BarbeariaZanetti.Web.Repositories
                 });
         }
 
+        public async Task<IEnumerable<Agendamento>> BuscarPorMesAsync(
+            int ano,
+            int mes)
+        {
+            var inicioMes = new DateTime(ano, mes, 1);
+            var inicioProximoMes = inicioMes.AddMonths(1);
+
+            const string sql = @"
+            SELECT
+                Id,
+                ClienteId,
+                BarbeiroId,
+                ServicoId,
+                StatusId,
+                FormaPagamentoId,
+                DataHoraInicio,
+                DataHoraFim,
+                ValorCobrado,
+                Observacao,
+                DataCriacao,
+                DataAtualizacao
+            FROM Agendamentos
+            WHERE DataHoraInicio >= @InicioMes
+              AND DataHoraInicio < @InicioProximoMes
+            ORDER BY DataHoraInicio;
+            ";
+
+            using var connection = _connectionFactory.CreateConnection();
+
+            return await connection.QueryAsync<Agendamento>(
+            sql,
+            new
+            {
+                InicioMes = inicioMes,
+                InicioProximoMes = inicioProximoMes
+            });
+        }
+
         public async Task<Agendamento?> BuscarPorIdAsync(int id)
         {
             const string sql = @"
