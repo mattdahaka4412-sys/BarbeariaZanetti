@@ -84,56 +84,105 @@ function selecionarDia(dia, mes, ano) {
         (grupos, atendimento) => {
             const nomeBarbeiro = atendimento.barbeiro;
 
-                if (!grupos[nomeBarbeiro]) {
+            if (!grupos[nomeBarbeiro]) {
                 grupos[nomeBarbeiro] = [];
-                }
+            }
 
-                grupos[nomeBarbeiro].push(atendimento);
+            grupos[nomeBarbeiro].push(atendimento);
 
-                return grupos;
+            return grupos;
         },
         {}
     );
 
     Object.entries(gruposPorBarbeiro).forEach(
-    ([nomeBarbeiro, atendimentos]) => {
-        lista.innerHTML += `
-            <div class="barber-agenda-header">
-                <i class="bi bi-person-circle"></i>
-
-                <div>
-                    <strong>${nomeBarbeiro}</strong>
-                    <small>
-                        ${atendimentos.length}
-                        atendimento(s)
-                    </small>
-                </div>
-            </div>
-        `;
-
-        atendimentos.forEach(item => {
+        ([nomeBarbeiro, atendimentos]) => {
             lista.innerHTML += `
-                <div class="appointment-card">
+                <div class="barber-agenda-header">
+                    <i class="bi bi-person-circle"></i>
 
-                    <div class="appointment-time">
-                        <strong>${item.hora}</strong>
-                        <small>${item.horaFim}</small>
-                    </div>
+                    <div>
+                        <strong>${nomeBarbeiro}</strong>
 
-                    <div class="appointment-info">
-                        <strong>${item.cliente}</strong>
-                        <span>${item.servico}</span>
+                        <small>
+                            ${atendimentos.length}
+                            atendimento(s)
+                        </small>
                     </div>
+                </div>
+            `;
 
-                    <div class="appointment-value">
-                        ${item.valor}
+            atendimentos.forEach(item => {
+                const botoesAcao = item.statusId === 1
+                    ? `
+                    <div class="appointment-actions">
+
+                        <button type="button"
+                            class="appointment-action action-complete"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            data-bs-title="Concluir atendimento"
+                            onclick="abrirModalConclusao(${item.id})">
+
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+
+                        <button type="button"
+                            class="appointment-action action-cancel"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            data-bs-title="Cancelar atendimento"
+                            onclick="confirmarCancelamento(${item.id})">
+
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+
+                        <button type="button"
+                            class="appointment-action action-absence"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            data-bs-title="Cliente não compareceu"
+                            onclick="confirmarNaoComparecimento(${item.id})">
+
+                            <i class="bi bi-person-x"></i>
+                        </button>
+
                     </div>
+                `
+            : "";
+
+            lista.innerHTML += `
+                <div class="appointment-card"
+                 data-agendamento-id="${item.id}"
+                 data-status-id="${item.statusId}">
+
+                    <div class="appointment-main">
+
+                        <div class="appointment-time">
+                            <strong>${item.hora}</strong>
+                            <small>${item.horaFim}</small>
+                        </div>
+
+                        <div class="appointment-info">
+                            <strong>${item.cliente}</strong>
+                            <span>${item.servico}</span>
+                        </div>
+
+                        <div class="appointment-value">
+                            ${item.valor}
+                            </div>
+
+                        </div>
+
+                    ${botoesAcao}
 
                 </div>
             `;
         });
-    }
+        }
     );
+
+    inicializarTooltips();
 
     preencherDataDoModal(dia, mes, ano);
 }
@@ -292,6 +341,45 @@ function configurarValorDoServico() {
                 );
         }
     );
+}
+
+function abrirModalConclusao(agendamentoId) {
+    console.log(
+        "Concluir agendamento:",
+        agendamentoId
+    );
+}
+
+function confirmarCancelamento(agendamentoId) {
+    console.log(
+        "Cancelar agendamento:",
+        agendamentoId
+    );
+}
+
+function confirmarNaoComparecimento(agendamentoId) {
+    console.log(
+        "Não compareceu:",
+        agendamentoId
+    );
+}
+
+function inicializarTooltips() {
+    const elementos =
+        document.querySelectorAll(
+            '[data-bs-toggle="tooltip"]'
+        );
+
+    elementos.forEach(elemento => {
+        const tooltipExistente =
+            bootstrap.Tooltip.getInstance(elemento);
+
+        if (tooltipExistente) {
+            tooltipExistente.dispose();
+        }
+
+        new bootstrap.Tooltip(elemento);
+    });
 }
 
 document.addEventListener(

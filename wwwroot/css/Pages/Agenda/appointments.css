@@ -105,15 +105,21 @@
     gap: 14px;
 }
 
+/* ===========================
+   Card do Atendimento
+=========================== */
+
 .appointment-card {
-    display: grid;
-    grid-template-columns: 82px 1fr auto;
-    align-items: center;
-    gap: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
     background: rgba(255,255,255,.035);
     border: 1px solid var(--border);
     border-radius: var(--radius-medium);
+
     padding: 16px 18px;
+
     transition: var(--transition);
 }
 
@@ -123,10 +129,37 @@
     background: rgba(255,255,255,.055);
 }
 
+/* Parte superior:
+   horário, cliente e valor */
+
+.appointment-main {
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+}
+
 .appointment-time {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
     color: var(--gold);
-    font-size: 22px;
     font-weight: 900;
+}
+
+.appointment-time strong {
+    font-size: 22px;
+}
+
+.appointment-time small {
+    color: var(--gold);
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.appointment-info {
+    min-width: 0;
 }
 
 .appointment-info strong {
@@ -144,10 +177,124 @@
 }
 
 .appointment-value {
+    align-self: start;
+
     color: var(--text);
     font-weight: 800;
+
     white-space: nowrap;
+    text-align: right;
 }
+
+/* ===========================
+   Botões de Ação
+=========================== */
+
+.appointment-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    padding-top: 8px;
+
+    border-top: 1px solid rgba(255,255,255,.07);
+}
+
+.appointment-action {
+    width: 36px;
+    height: 36px;
+
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 0;
+
+    border-radius: 50%;
+    border: 1px solid transparent;
+
+    background: transparent;
+
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+
+    transition:
+        transform .20s ease,
+        background-color .20s ease,
+        border-color .20s ease,
+        box-shadow .20s ease;
+}
+
+.appointment-action i {
+    pointer-events: none;
+}
+
+.appointment-action:hover {
+    transform: translateY(-2px) scale(1.08);
+}
+
+.appointment-action:active {
+    transform: scale(.96);
+}
+
+.appointment-action:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+}
+
+/* Concluir */
+
+.action-complete {
+    color: #65c98a;
+    border-color: rgba(46,139,87,.45);
+    background: rgba(46,139,87,.10);
+}
+
+.action-complete:hover {
+    color: #fff;
+    background: #2E8B57;
+    border-color: #2E8B57;
+
+    box-shadow: 0 0 18px rgba(46,139,87,.45);
+}
+
+/* Cancelar */
+
+.action-cancel {
+    color: #df6969;
+    border-color: rgba(178,34,34,.45);
+    background: rgba(178,34,34,.10);
+}
+
+.action-cancel:hover {
+    color: #fff;
+    background: #B22222;
+    border-color: #B22222;
+
+    box-shadow: 0 0 18px rgba(178,34,34,.45);
+}
+
+/* Não compareceu */
+
+.action-absence {
+    color: #bcbcbc;
+    border-color: rgba(160,160,160,.35);
+    background: rgba(160,160,160,.08);
+}
+
+.action-absence:hover {
+    color: #fff;
+    background: #666;
+    border-color: #777;
+
+    box-shadow: 0 0 18px rgba(180,180,180,.30);
+}
+
+/* ===========================
+   Estado Vazio
+=========================== */
 
 .agenda-empty-state {
     text-align: center;
@@ -161,6 +308,10 @@
     margin-bottom: 10px;
 }
 
+/* ===========================
+   Responsividade
+=========================== */
+
 @media (max-width: 620px) {
     .selected-day-header {
         flex-direction: column;
@@ -170,16 +321,31 @@
         flex-direction: column;
     }
 
-    .appointment-card {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-
-    .appointment-time {
-        font-size: 20px;
+    .appointment-main {
+        grid-template-columns: 72px minmax(0, 1fr);
+        gap: 12px;
     }
 
     .appointment-value {
+        grid-column: 1 / -1;
+        justify-self: end;
+
         color: var(--gold);
+    }
+
+    .appointment-time strong {
+        font-size: 20px;
+    }
+
+    .appointment-time small {
+        font-size: 16px;
+    }
+
+    .appointment-info strong {
+        font-size: 17px;
+    }
+
+    .appointment-actions {
+        justify-content: center;
     }
 }
